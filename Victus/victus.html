@@ -1,0 +1,74 @@
+<html>
+<title>Practice</title>
+<canvas id="webglcanvas" width="500" height="500"></canvas>
+
+<script>
+    var canvas = document.getElementById("webglcanvas");
+    var gl = canvas.getContext("webgl");
+
+    var vertexShaderSource = `
+        attribute vec3 a_coords;
+        void main() {
+            gl_Position = vec4(a_coords, 1.0);
+        }`;
+
+    var fragmentShaderSource = `
+        precision mediump float;
+        uniform vec4 u_color;
+        void main() {
+            gl_FragColor = u_color;
+        }`;
+
+    var vsh = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vsh, vertexShaderSource);
+    gl.compileShader(vsh);
+
+    var fsh = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fsh, fragmentShaderSource);
+    gl.compileShader(fsh);
+
+    var prog = gl.createProgram();
+    gl.attachShader(prog, vsh);
+    gl.attachShader(prog, fsh);
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+    var u_color_location = gl.getUniformLocation(prog, "u_color");
+
+    function drawTriangle(coords, color) {
+        var buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coords), gl.STATIC_DRAW);
+        gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_coords_location);
+
+        gl.uniform4fv(u_color_location, color);
+        gl.drawArrays(gl.TRIANGLES, 0, coords.length / 3);
+    }
+
+    gl.clearColor(0.33, 0.49, 0.29, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var black = [0.0, 0.0, 0.0, 1.0];
+    var triangles = [
+        [-0.24, 0.22, 0.0, -0.13, 0.42, 0.0, -0.03, 0.22, 0.0],
+       
+        [-0.27, 0.22, 0.0, -0.16, 0.42, 0.0, -0.38, 0.42, 0.0],
+        
+        [0.37, 0.42, 0.0, 0.16, 0.42, 0.0, 0.26, 0.22, 0.0],
+        
+        [0.03, 0.22, 0.0, 0.13, 0.42, 0.0, 0.23, 0.22, 0.0],
+        
+        [-0.13, 0.0, 0.0, -0.03, 0.2, 0.0, -0.24, 0.2, 0.0],
+        
+        [0.23, 0.2, 0.0, 0.03, 0.2, 0.0, 0.13, 0.0, 0.0],
+        
+        [-0.1, -0.0, 0.0, 0.0, 0.2, 0.0, 0.1, -0.0, 0.0],
+        
+        [0.0, -0.21, 0.0, -0.1, -0.02, 0.0, 0.1, -0.02, 0.0],
+    ];
+
+    triangles.forEach((triangle) => drawTriangle(triangle, black));
+</script>
+</html>
