@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Satellite in Orbit</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, satellite, earth;
+        let satelliteAngle = 0;
+        
+        
+
+        // Shaders
+        const vertexShader = `
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            
+            void main() {
+                vUv = uv;
+                
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const fragmentShader = `
+            uniform sampler2D uTexture1;
+            uniform sampler2D uTexture2;
+            
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            
+            void main() {
+                vec3 light = vec3(0.5, 0.2, 1.0);
+                light = normalize(light);
+                
+                
+                vec4 texColor1 = texture2D(uTexture1, vUv);
+                vec4 texColor2 = texture2D(uTexture2, vUv);
+                
+                vec4 finalColor = mix(texColor1, texColor2, float(uUseAltTexture));
+                gl_FragColor = vec4(finalColor.rgb * d, 1.0);
+            }
+        `;
+
+        init();
+        animate();
+
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 3, 5);
+            scene.add(directionalLight);
+
+            // Camera position
+            camera.position.set(0, 5, 10);
+            
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
